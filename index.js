@@ -19,9 +19,11 @@ app.use( express.static('public') );
  
 // todo lo que exporte  el archivo ./routes/auth lo va a habilitar en la ruta del  endpoint api/auth
  app.use('/api/auth', require('./routes/auth') );
- app.use('/api/negocio', require('./routes/negocio') );
+ app.use('/api/commerce', require('./routes/commerce') );
+ app.use('/api/product', require('./routes/product') );
 
  const port = process.env.PORT || 4000
+
 
  app.listen(port, () => {
    console.log(`Server running successfully on port ${port}`);

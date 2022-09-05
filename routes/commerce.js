@@ -3,9 +3,12 @@ const { check } = require('express-validator' );
 const { validarCampos} = require('../middlewares/validar-campos');
 const router = Router();
 const { validarJWT } = require('../middlewares/validar-jwt');
-const { crearNegocio, loginNegocio, uploadFile, getNegocios, revalidarToken } = require('../controllers/negocio');
+const { createCommerce, loginCommerce, uploadFile, getCommerce,  validateToken,  updateShop, getCommerceList} = require('../controllers/commerce');
 
-router.post('/new', crearNegocio );
+// endpoint '/api/Commerce'
+
+router.post('/new', createCommerce );
+
 router.post(
     '/login',
     [
@@ -13,10 +16,16 @@ router.post(
          check('password', 'El password con minimo 6 caracteres').isLength({min: 6}),
          validarCampos
     ],
-    loginNegocio );
+    loginCommerce );
+
 router.post( '/', uploadFile); 
-router.get('/listanegocios', getNegocios );
+
+router.put('/:id', updateShop);
+
+router.get('/', getCommerceList );
+
+router.get('/:id' , getCommerce );
   
- router.get('/renew', validarJWT,  revalidarToken );
+ router.get('/renew', validarJWT,  validateToken );
  
 module.exports = router;   

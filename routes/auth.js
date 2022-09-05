@@ -5,20 +5,21 @@ const { validarJWT } = require ('../middlewares/validar-jwt');
 const router = Router();
 
  
-// es bueno poner comentario asi: Rutas de usuarios/auth
-// host + /api/auth  porque de este codigo no se deduce  cual es el endpoint
+// endpoint '/api/auth
 
-const { crearUsuario, loginUsuario, revalidarToken} = require('../controllers/auth');
+const { createUser, loginUser, validateToken} = require('../controllers/auth');
 
 router.post(
     '/new',
     [
          check('name', 'El nombre es obligatorio').not().isEmpty(),
+         check('address', 'La dirección es obligatoria').not().isEmpty(),
+         check('celular', 'El numero de telefono es obligatorio').not().isEmpty(),
          check('email', 'El email es obligatorio').isEmail(),
          check('password', 'El password con minimo 6 caracteres').isLength({min: 6}),
          validarCampos
     ],
-    crearUsuario ); 
+    createUser ); 
  
 router.post(
     '/',
@@ -27,9 +28,9 @@ router.post(
          check('password', 'El password con minimo 6 caracteres').isLength({min: 6}),
          validarCampos
     ],
-    loginUsuario );
+    loginUser );
     
   
-router.get('/renew', validarJWT,  revalidarToken );
+router.get('/renew', validateToken );
   
 module.exports = router;   

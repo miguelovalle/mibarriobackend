@@ -1,33 +1,46 @@
 const { Schema, model } = require('mongoose');
 
-const NegocioSchema =  Schema({
+const commerceSchema = Schema({
 
     tipo: {
         type: String,
         required: true
     },
-    nombre: {
+    name: {
         type: String,
-        required: true
+        required: true,
+        trim: true
     },
-    emblema: {
+    emblem: {
         type: String,
+        default: null,
+        trim: true
     },
-    especialidad: {
+    specialty: {
         type: String,
+        default: null,
+        trim: true
     },
-    contacto: {
-        type: String,
-        required: true
+    categories: {
+        type: Array,
+        default: []
     },
-    celular: {
+
+    contact: {
         type: String,
-        required: true
+        required: true,
+        trim: true
+    },
+    phone: {
+        type: String,
+        required: true,
+        trim: true
     },
     email: {
         type: String,
         required: true,
-        unique: true
+        unique: true,
+        trim: true
     },
     passwd: {
         type: String,
@@ -50,16 +63,20 @@ const NegocioSchema =  Schema({
             required: true
         }
     },
-    direccion: {
-    type: String
+    address: {
+        type: String,
+        default: null,
+        trim: true
     },
-    cruce: { 
-    type:String,
+    cross: { 
+        type:String,
+        default:null,
+        trim: true
     },
     imgName: {
         type:String
     }
 })
-NegocioSchema.index({ "location": "2dsphere" });
+commerceSchema.index({ 'location' : "2dsphere" });
 
-module.exports = model('Negocio',NegocioSchema );
+module.exports = model('Commerce', commerceSchema );

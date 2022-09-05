@@ -3,15 +3,28 @@ const { Schema, model } = require('mongoose');
 
 const UsuarioSchema = Schema({
 
-    name: {
+    name: { 
+        nombres: String, 
+        apellidos: String 
+    },
+    
+    address: [{ 
+        lugar: String,
+        direccion: String,
+        coordenadas:{lat: Number, long: Number}
+    }],
+
+    celular: {
         type: String,
         required: true
     },
+    
     email: {
         type: String,
         required: true,
         unique: true,
     },
+    
     password: {
         type: String,
         required: true,
