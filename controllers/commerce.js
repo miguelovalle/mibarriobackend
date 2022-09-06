@@ -123,29 +123,26 @@ const uploadFile = async(req, resp=response ) => {
 }
 
 const updateShop = async(req, res ) => {
-
-  const shopId = req.params.id;
-  const Shop = req.body;
+  const shopid = req.params.id;
+  const shop = req.body;
+  const salt =  bcrypt.genSaltSync();
+  shop.passwd=  bcrypt.hashSync( shop.passwd, salt );
   try {
-    
-      const shopdb = await Commerce.findById( shopId );
-    
+      const shopdb = await Commerce.findById( shopid );
       if ( !shopdb ) {
           return res.status(404).json({
               ok: false,
               msg: 'Negocio inxistente por ese Id'
           }); 
       }
-
 /*       if( product.commerce.toString !== uid ) {
           return res.status(401).json({
               ok:false,
               msg: 'No tiene privilegios para editar este evento'
           });
       } */
-      
-      const shopUpdated = await Commerce.findByIdAndUpdate( shopId, Shop, { new: true } );
-
+      const shopUpdated = await Commerce.findByIdAndUpdate( shopId, shop, { new: true } );
+      console.log(shopUpdated)
       res.json({
           ok: true,
           shopUpdated
