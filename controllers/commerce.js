@@ -142,7 +142,6 @@ const updateShop = async(req, res ) => {
           });
       } */
       const shopUpdated = await Commerce.findByIdAndUpdate( shopId, shop, { new: true } );
-      console.log(shopUpdated)
       res.json({
           ok: true,
           shopUpdated

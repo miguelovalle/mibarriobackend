@@ -73,6 +73,13 @@ const commerceSchema = Schema({
         default: null,
         trim: true
     },
+    addrritems: {
+        principal: String,
+        cruceA: String,
+        cruceB: String,
+        puerta: String,
+        detalles:String
+    },
     imgName: {
         type:String
     }
