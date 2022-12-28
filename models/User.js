@@ -14,7 +14,7 @@ const UsuarioSchema = Schema({
         coordenadas:{lat: Number, long: Number}
     }],
 
-    celular: {
+    phone: {
         type: String,
         required: true
     },

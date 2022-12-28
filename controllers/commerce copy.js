@@ -1,52 +1,27 @@
 const { response } = require("express");
+//const Commerce = require('../models/Commerce');
 const bcrypt = require("bcryptjs");
 const { generarJWT } = require("../helpers/jwt");
 const { getDb } = require("../database/conn");
 const ObjectId = require("mongodb").ObjectId;
 
-const getCommerceList = async (req, res) => {
-  try {
-    const long = Number(req.query.lg);
-    const lat = Number(req.query.lt);
-
-    const db_connect = getDb();
-    const commerce = db_connect.collection("commerces");
-    const cursor = await commerce.find({
-      location: {
-        $near: {
-          $geometry: { type: "Point", coordinates: [long, lat] },
-          $maxDistance: 10000,
-        },
-      },
-    });
-    //const cursor = await commerce.find({});
-    let commerces = [];
-    await cursor.forEach((doc) => commerces.push(doc));
-
-    return res.json({
-      ok: true,
-      commerces,
-    });
-  } catch (err) {
-    console.log(`Error de conexion. Intente más tarde ${err}`);
-  }
-};
-
 const loginCommerce = async (req, res) => {
   const { email, password } = req.body;
+  let db_connect;
 
   try {
-    const db_connect = getDb();
+    db_connect = getDb();
     const query = { email: email };
     const commerce = db_connect.collection("commerces");
     const result = await commerce.findOne(query);
-
+    //  if (err) throw err;
     if (!result) {
       return res.status(400).json({
         ok: false,
         msg: "No existe un contacto con ese email",
       });
     }
+    //    console.log(result);
     const validPassword = bcrypt.compareSync(password, result.passwd);
 
     if (!validPassword) {
@@ -74,16 +49,33 @@ const loginCommerce = async (req, res) => {
 };
 
 const createCommerce = async (req, res) => {
-  try {
-    const commerce = req.body;
+  const commerce = req.body;
+  let db_connect;
 
-    const db_connect = getDb();
+  try {
+    db_connect = getDb();
+    const query = { email: commerce.email };
+    const commerce = db_connect.collection("commerces");
+
+    // const result = await commerce.findOne(query, (err, result) => {
+    //   if (err) throw err;
+    //   console.log(result);
+    //   if (result) {
+    //     return res.status(400).json({
+    //       ok: false,
+    //       msg: "Un usuario existe con este correo",
+    //     });
+    //   }
+    // });
 
     const salt = bcrypt.genSaltSync();
-
     commerce.passwd = bcrypt.hashSync(commerce.passwd, salt);
-
+    //    db_connect = getDb();
     await db_connect.collection("commerces").insertOne(commerce);
+
+    // , (err, result) => {
+    //   if (err) throw err;
+    // });
 
     const token = await generarJWT(commerce.id, commerce.name);
 
@@ -92,37 +84,29 @@ const createCommerce = async (req, res) => {
       token,
     });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({
       ok: false,
-      msg: `comuniquese con el administrador ${err}`,
+      msg: `comuniquese con el administrador ${err}`
     });
   }
 };
 
 const getCommerce = async (req, res) => {
-  try {
-    const uid = req.params.id;
-    const db_connect = getDb();
-    const query = { _id: ObjectId(uid) };
-    const commerce = db_connect.collection("commerces");
-    const result = await commerce.findOne(query);
+  const uid = req.params.id;
 
-    if (!result) {
-      return res.status(400).json({
-        ok: false,
-        msg: "No se encontró el registro",
+  try {
+    let db_connect = getDb();
+    db_connect
+      .collection("commerce")
+      .findOne({ _id: ObjectId(uid) }, (err, result) => {
+        if (err) throw err;
+        res.status(201).json(result);
       });
-    }
-    if (result) {
-      res.status(201).json({
-        ok: true,
-        result,
-      });
-    }
-  } catch (err) {
+  } catch (error) {
     res.status(500).json({
       ok: false,
-      msg: `Error emitido por el servidor ${err}`,
+      msg: "error emitido por el servidor getCommerce en el server",
     });
   }
 };
@@ -148,29 +132,6 @@ const uploadFile = async (req, resp = response) => {
   }
 };
 
-const updateShop = async (req, res) => {
-  const shopid = req.params.id.trim();
-  const shop = req.body;
-  const salt = bcrypt.genSaltSync();
-  shop.passwd = bcrypt.hashSync(shop.passwd, salt);
-  try {
-    const db_connect = getDb();
-    const query = { _id: ObjectId(shopid) };
-    const commerce = db_connect.collection("commerces");
-    const result = await commerce.replaceOne(query, shop);
-
-    res.json({
-      ok: true,
-      result,
-    });
-  } catch (error) {
-    res.status(500).json({
-      ok: false,
-      msg: "hable con el addor",
-    });
-  }
-};
-
 const validateToken = async (req, res = response) => {
   const { id, name } = req;
   const token = await generarJWT(id, name);
@@ -188,6 +149,4 @@ module.exports = {
   createCommerce,
   getCommerce,
   uploadFile,
-  getCommerceList,
-  updateShop,
 };

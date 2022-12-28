@@ -1,24 +1,23 @@
 const { Schema, model } = require('mongoose');
 
 const commerceSchema = Schema({
-
     tipo: {
         type: String,
-        required: true
+//         required: true
     },
     name: {
         type: String,
-        required: true,
+//         required: true,
         trim: true
     },
-    emblem: {
+     emblem: {
         type: String,
-        default: null,
+        default: " ",
         trim: true
     },
     specialty: {
         type: String,
-        default: null,
+        default: " ",
         trim: true
     },
     categories: {
@@ -28,23 +27,23 @@ const commerceSchema = Schema({
 
     contact: {
         type: String,
-        required: true,
+        // required: true,
         trim: true
     },
     phone: {
         type: String,
-        required: true,
+        // required: true,
         trim: true
     },
     email: {
         type: String,
-        required: true,
+        // required: true,
         unique: true,
         trim: true
     },
     passwd: {
-        type: String,
-        required: true
+        type: String
+        // required: true
     },
    lat: {
        type: String
@@ -53,29 +52,36 @@ const commerceSchema = Schema({
        type: String
    },
    location: {
-        type:{
+        type: {
             type: String,
-            enum: ['point'],
-            required: true
+            enum: ['point']
+            // required: true
         },
         coordinates: {
-            type: [Number],
-            required: true
+            type: [Number]
+            // required: true
         }
     },
     address: {
         type: String,
-        default: null,
+        default: " ",
         trim: true
     },
     cross: { 
-        type:String,
+        type: String,
         default: null,
         trim: true
     },
+    addrritems: {
+        principal: String,
+        cruceA: String,
+        cruceB: String,
+        puerta: String,
+        detalles: String
+    },
     imgName: {
-        type:String
-    }
+        type: String
+    } 
 })
 commerceSchema.index({ 'location' : "2dsphere" });
 
