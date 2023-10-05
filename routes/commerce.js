@@ -9,7 +9,9 @@ const {
   createCommerce,
   uploadFile,
   getCommerceList,
+  commerceList,
   updateShop,
+  getCategories,
 } = require("../controllers/commerce");
 
 // endpoint '/api/Commerce'
@@ -34,9 +36,13 @@ router.post("/", uploadFile);
 
 router.put("/:id", updateShop);
 
-router.get("/list/", getCommerceList);
+router.post("/list", commerceList);
+
+router.get("/list", getCommerceList);
 
 router.get("/:id", getCommerce);
+
+router.get("/cat/types", getCategories);
 
 router.get("/renew", validarJWT, validateToken);
 

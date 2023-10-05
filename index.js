@@ -2,15 +2,12 @@ const express = require("express");
 require("dotenv").config();
 const cors = require("cors");
 const fileupload = require("express-fileupload");
-//const { dbConnection } = require('./database/config');
 //crear el servidor de express
 const app = express();
 
-//dbConnection();
-
 app.use(cors());
 
-// lectura y parseo srd del body: peticiones q vengan en json se procesan en este midleware y se extrae su contenido
+// lectura y parseo del body: peticiones q vengan en json se procesan en este midleware y se extrae su contenido
 
 app.use(express.json());
 
@@ -22,6 +19,7 @@ app.use(express.static("public"));
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/commerce", require("./routes/commerce"));
 app.use("/api/product", require("./routes/product"));
+app.use("/api/order", require("./routes/order"));
 
 const port = process.env.PORT || 4000;
 //const dbo = require("./database/conn");

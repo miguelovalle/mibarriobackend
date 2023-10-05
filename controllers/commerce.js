@@ -4,22 +4,78 @@ const { generarJWT } = require("../helpers/jwt");
 const { getDb } = require("../database/conn");
 const ObjectId = require("mongodb").ObjectId;
 
+const commerceList = async (req, res) => {
+  try {
+    let cursor;
+    const tipo = req.body.category;
+    const long = Number(req.body.coords.lng);
+    const lat = Number(req.body.coords.lat);
+    const reach = req.body.reach;
+    const db_connect = getDb();
+    const commerce = db_connect.collection("commerces");
+
+    if (reach === true) {
+      cursor = await commerce.find({ tipo: tipo });
+    } else {
+      cursor = await commerce.aggregate([
+        {
+          $geoNear: {
+            near: { type: "point", coordinates: [long, lat] },
+            distanceField: "distance",
+            $maxDistance: 2000,
+            query: { tipo: tipo },
+            spherical: true,
+          },
+        },
+      ]);
+    }
+
+    let commerces = [];
+    await cursor.forEach((doc) => commerces.push(doc));
+    return res.json({
+      ok: true,
+      commerces,
+    });
+  } catch (error) {
+    res.status(500).send(`error devuelto ${error}`);
+  }
+};
+
+const getCategories = async (req, res = response) => {
+  try {
+    const db_connect = getDb();
+    const categories = db_connect.collection("types");
+    const cursor = await categories.find({});
+    let types = [];
+    await cursor.forEach((doc) => types.push(doc));
+    return res.json({
+      ok: true,
+      types,
+    });
+  } catch (error) {
+    res.status(500).send(`error devuelto ${error}`);
+  }
+};
+
 const getCommerceList = async (req, res) => {
   try {
     const long = Number(req.query.lg);
     const lat = Number(req.query.lt);
-
     const db_connect = getDb();
     const commerce = db_connect.collection("commerces");
-    const cursor = await commerce.find({
-      location: {
-        $near: {
-          $geometry: { type: "Point", coordinates: [long, lat] },
-          $maxDistance: 10000,
+
+    const cursor = await commerce
+      .find({
+        location: {
+          $near: {
+            $geometry: { type: "Point", coordinates: [long, lat] },
+            $maxDistance: 100000,
+          },
         },
-      },
-    });
-    //const cursor = await commerce.find({});
+      })
+      .toArray();
+
+    // const cursor = await commerce.find({ tipo: "panaderia" });
     let commerces = [];
     await cursor.forEach((doc) => commerces.push(doc));
 
@@ -34,7 +90,6 @@ const getCommerceList = async (req, res) => {
 
 const loginCommerce = async (req, res) => {
   const { email, password } = req.body;
-
   try {
     const db_connect = getDb();
     const query = { email: email };
@@ -50,6 +105,7 @@ const loginCommerce = async (req, res) => {
     const validPassword = bcrypt.compareSync(password, result.passwd);
 
     if (!validPassword) {
+      
       return res.status(400).json({
         ok: false,
         msg: "contraseña incorrecta",
@@ -188,6 +244,8 @@ module.exports = {
   createCommerce,
   getCommerce,
   uploadFile,
+  commerceList,
   getCommerceList,
   updateShop,
+  getCategories,
 };

@@ -16,28 +16,31 @@ const createProduct = async (req, res = response) => {
   }
 };
 
-/* const aggregateProducts = async () => {
+const searchText = async (req, res = response) => {
   try {
-    
+    const { q } = req.body;
+    console.log("q", q);
     const db_connect = getDb();
-    const aggregate = req.body;
-    const result = await db_connect
-      .collection("aggregates")
-      .insertOne(aggregate);
-    return res.json({run 
+    const product = db_connect.collection("products");
+    const cursor = await product.find({
+      $text: { $search: q },
+    });
+
+    let products = [];
+    await cursor.forEach((doc) => products.push(doc));
+    return res.json({
       ok: true,
-      id: result.insertedId,
+      products,
     });
   } catch (error) {
     res.status(500).send(`error devuelto ${error}`);
   }
-}; */
+};
 
 const getProducts = async (req, res = response) => {
   try {
     const id = req.id;
 
-    console.log(id);
     const db_connect = getDb();
     const product = db_connect.collection("products");
     const query = { commerce: id };
@@ -55,18 +58,15 @@ const getProducts = async (req, res = response) => {
   }
 };
 
-const getproductSinTkn = async (req, res = response) => {
+const productSinTkn = async (req, res = response) => {
   try {
     const { id } = req.body;
-
     const db_connect = getDb();
     const product = db_connect.collection("products");
     const query = { commerce: id };
-    //const query = {};
     const cursor = await product.find(query);
     let products = [];
     await cursor.forEach((doc) => products.push(doc));
-
     return res.json({
       ok: true,
       products,
@@ -77,6 +77,22 @@ const getproductSinTkn = async (req, res = response) => {
 };
 
 const getProduct = async (req, res = response) => {
+  try {
+    const id = req.params.id;
+    const db_connect = getDb();
+    const product = db_connect.collection("products");
+    const query = { commerce: id };
+    const result = await product.findById(query);
+    return res.json({
+      ok: true,
+      result,
+    });
+  } catch (error) {
+    res.status(500).send(`error devuelto ${error}`);
+  }
+};
+
+const getProductSinTkn = async (req, res = response) => {
   try {
     const id = req.params.id;
     const db_connect = getDb();
@@ -196,5 +212,7 @@ module.exports = {
   enabledProducts,
   deleteProduct,
   replaceProduct,
-  getproductSinTkn,
+  productSinTkn,
+  getProductSinTkn,
+  searchText,
 };

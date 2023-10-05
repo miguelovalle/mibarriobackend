@@ -11,14 +11,18 @@ const {
   enabledProducts,
   deleteProduct,
   replaceProduct,
-  getproductSinTkn,
+  productSinTkn,
+  getProductSinTkn,
+  searchText,
 } = require("../controllers/product");
 
 const router = Router();
 
 router.post("/", uploadFile);
 
-router.post("/sintkn", getproductSinTkn);
+router.post("/sintkn", productSinTkn);
+
+router.post("/search", searchText);
 
 router.use(validarJWT);
 
@@ -36,6 +40,8 @@ router.post(
 router.get("/", getProducts);
 
 router.get("/:id", getProduct);
+
+router.get("/:id", getProductSinTkn);
 
 router.put("/", updateProduct);
 

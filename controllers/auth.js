@@ -1,14 +1,14 @@
 const { response } = require("express");
 const bcrypt = require("bcryptjs");
-//const User = require("../models/User");
 const { generarJWT } = require("../helpers/jwt");
 const { body } = require("express-validator");
 const { getDb } = require("../database/conn");
+const { ObjectId } = require("mongodb");
 
 const validateUser = async (req, res) => {
   const { email, password } = req.body;
   try {
-    db_connect = getDb();
+    const db_connect = getDb();
     const query = { email: email };
     const user = db_connect.collection("users");
     const result = await user.findOne(query);
@@ -29,15 +29,13 @@ const validateUser = async (req, res) => {
 const createUser = async (req, res = response) => {
   try {
     const db_connect = getDb();
-
     const user = {
       name: req.body.name,
       address: req.body.address,
-      celular: req.body.celular,
+      phone: req.body.phone,
       email: req.body.email,
       password: req.body.password,
     };
-
     const salt = bcrypt.genSaltSync();
 
     user.password = bcrypt.hashSync(user.password, salt);
@@ -48,8 +46,10 @@ const createUser = async (req, res = response) => {
 
     res.status(201).json({
       ok: true,
-      uid: user.id,
+      uid: user._id,
       name: user.name,
+      address: user.address,
+      phone: user.celular,
       token,
     });
   } catch (error) {
@@ -61,10 +61,11 @@ const createUser = async (req, res = response) => {
 };
 
 const loginUser = async (req, res = response) => {
-  const { email, password } = req.body;
+  console.log(req.body)
+  const data = req.body;
   try {
     const db_connect = getDb();
-    const query = { email: email };
+    const query = { email: data.mail };
     const user = db_connect.collection("users");
     const result = await user.findOne(query);
 
@@ -76,7 +77,7 @@ const loginUser = async (req, res = response) => {
     }
 
     // Confirmar la contraseña
-    const validPassword = bcrypt.compareSync(password, result.password);
+    const validPassword = bcrypt.compareSync(data.password, result.password);
     if (!validPassword) {
       return res.status(400).json({
         ok: false,
@@ -84,15 +85,21 @@ const loginUser = async (req, res = response) => {
       });
     }
     // Generar nuestro JWT
-    const token = await generarJWT(result._id, user.name);
-
+    const token = await generarJWT(result._id, result.name);
+    console.log(result);
     res.status(201).json({
       ok: true,
       id: result._id,
-      name: result.name.nombres,
+      firstName: result.name.firstName,
+      secondName: result.name.lastName,
+      address: result.address,
+      celular: result.phone,
+      coords: JSON.stringify(result.coords),
+      email: result.email,
       token,
     });
   } catch (error) {
+    console.log("error", error);
     res.status(500).json({
       ok: false,
       msg: "Favor comunicarse con el administrador",
@@ -112,9 +119,44 @@ const validateToken = async (req, res = response) => {
   });
 };
 
+const userDetail = async (req, res = response) => {
+  try {
+    const { id } = req.body;
+    const db_connect = getDb();
+    const query = { _id: ObjectId(id) };
+    const user = db_connect.collection("users");
+    const result = await user.findOne(query);
+    res.status(201).json({
+      ok: true,
+      userInf: result,
+    });
+  } catch (error) {
+    res.status(500).send(`error devuelto ${error}`);
+  }
+};
+
+
+const addAddress = async (req, res = response) => {
+  try {
+    const { id, address } = req.body;
+    const db_connect = getDb();
+    const query = { _id: ObjectId(id) };
+    const user = db_connect.collection("users");
+    const result = await user.updateOne(query, { $set: { address: address } });
+
+    res.status(201).json({
+      ok: true,
+      userInf: `${result.matchedCount} document(s) matched the query criteria.`,
+    });
+  } catch (error) {
+    res.status(500).send(`error devuelto ${error}`);
+  }
+};
 module.exports = {
   createUser,
   loginUser,
   validateToken,
   validateUser,
+  userDetail,
+  addAddress,
 };
