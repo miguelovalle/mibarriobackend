@@ -1,15 +1,23 @@
 const { Router } = require("express");
-//const { validarJWT } = require("../middlewares/validar-jwt");
+const { validarJWT } = require("../middlewares/validar-jwt");
 
-const { registerOrder } = require("../controllers/order");
+const {
+  registerOrder,
+  getOrders,
+  getOrdersGrouped,
+  updateOrder,
+} = require("../controllers/order");
 
 const router = Router();
 
+router.post("/", registerOrder);
 //router.use(validarJWT);
 
-router.post("/", registerOrder);
+router.post("/orderlist", getOrders);
 
-// router.put("/update", updateOrder);
+router.post("/totalgrouped", getOrdersGrouped);
+
+router.put("/update", updateOrder);
 
 // router.get("/:id", getOrder);
 

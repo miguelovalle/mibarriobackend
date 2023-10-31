@@ -64,16 +64,14 @@ const getCommerceList = async (req, res) => {
     const db_connect = getDb();
     const commerce = db_connect.collection("commerces");
 
-    const cursor = await commerce
-      .find({
-        location: {
-          $near: {
-            $geometry: { type: "Point", coordinates: [long, lat] },
-            $maxDistance: 100000,
-          },
+    const cursor = await commerce.find({
+      location: {
+        $near: {
+          $geometry: { type: "Point", coordinates: [long, lat] },
+          $maxDistance: 100000,
         },
-      })
-      .toArray();
+      },
+    });
 
     // const cursor = await commerce.find({ tipo: "panaderia" });
     let commerces = [];
@@ -105,7 +103,6 @@ const loginCommerce = async (req, res) => {
     const validPassword = bcrypt.compareSync(password, result.passwd);
 
     if (!validPassword) {
-      
       return res.status(400).json({
         ok: false,
         msg: "contraseña incorrecta",

@@ -61,7 +61,6 @@ const createUser = async (req, res = response) => {
 };
 
 const loginUser = async (req, res = response) => {
-  console.log(req.body)
   const data = req.body;
   try {
     const db_connect = getDb();
@@ -86,7 +85,6 @@ const loginUser = async (req, res = response) => {
     }
     // Generar nuestro JWT
     const token = await generarJWT(result._id, result.name);
-    console.log(result);
     res.status(201).json({
       ok: true,
       id: result._id,
@@ -134,7 +132,6 @@ const userDetail = async (req, res = response) => {
     res.status(500).send(`error devuelto ${error}`);
   }
 };
-
 
 const addAddress = async (req, res = response) => {
   try {

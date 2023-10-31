@@ -64,6 +64,7 @@ const productSinTkn = async (req, res = response) => {
     const db_connect = getDb();
     const product = db_connect.collection("products");
     const query = { commerce: id };
+    
     const cursor = await product.find(query);
     let products = [];
     await cursor.forEach((doc) => products.push(doc));
