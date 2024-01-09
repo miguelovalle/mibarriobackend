@@ -133,12 +133,10 @@ const createCommerce = async (req, res) => {
     const db_connect = getDb();
 
     const salt = bcrypt.genSaltSync();
-
     commerce.passwd = bcrypt.hashSync(commerce.passwd, salt);
-
     await db_connect.collection("commerces").insertOne(commerce);
 
-    const token = await generarJWT(commerce.id, commerce.name);
+    const token = await generarJWT(commerce.type, commerce.name);
 
     return res.status(201).json({
       ok: true,
@@ -147,7 +145,7 @@ const createCommerce = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       ok: false,
-      msg: `comuniquese con el administrador ${err}`,
+      msg: `comuniquese con el administrador ${error}`,
     });
   }
 };
