@@ -1,12 +1,12 @@
-const { response } = require("express");
-const { ObjectId } = require("mongodb");
-const { getDb } = require("../database/conn");
+const { response } = require('express');
+const { ObjectId } = require('mongodb');
+const { getDb } = require('../database/conn');
 
 const registerOrder = async (req, res = response) => {
   try {
     const db_connect = getDb();
     const order = req.body;
-    await db_connect.collection("orders").insertOne(order);
+    await db_connect.collection('orders').insertOne(order);
     return res.status(201).json({
       ok: true,
       orderId: order._id,
@@ -20,7 +20,7 @@ const registerRatesServices = async (req, res = response) => {
   try {
     const db_connect = getDb();
     const rate = req.body;
-    await db_connect.collection("ratesServices").insertOne(rate);
+    await db_connect.collection('ratesServices').insertOne(rate);
     return res.status(201).json({
       ok: true,
       orderId: order._id,
@@ -34,8 +34,7 @@ const registerRatesApp = async (req, res = response) => {
   try {
     const db_connect = getDb();
     const rate = req.body;
-    console.log(rate);
-    await db_connect.collection("ratesApps").insertOne(rate);
+    await db_connect.collection('ratesApps').insertOne(rate);
     return res.status(201).json({
       ok: true,
       orderId: order._id,
@@ -52,7 +51,7 @@ const getOrders = async (req, res = response) => {
     let start = new Date(changeDate).setHours(0, 0, 0);
     let end = new Date(changeDate).setHours(23, 59, 59);
 
-    const orders = db_connect.collection("orders");
+    const orders = db_connect.collection('orders');
 
     const query =
       filtered.length > 0
@@ -86,7 +85,7 @@ const getOrdersGrouped = async (req, res = response) => {
     let start = new Date(changeDate).setHours(0, 0, 0);
     let end = new Date(changeDate).setHours(23, 59, 59);
 
-    const orders = db_connect.collection("orders");
+    const orders = db_connect.collection('orders');
 
     const pipeline = [
       {
@@ -95,7 +94,7 @@ const getOrdersGrouped = async (req, res = response) => {
           dateOrder: { $gte: start, $lt: end },
         },
       },
-      { $group: { _id: "$changeState", countState: { $count: {} } } },
+      { $group: { _id: '$changeState', countState: { $count: {} } } },
     ];
 
     const aggCursor = await orders.aggregate(pipeline);
@@ -117,25 +116,27 @@ const updateOrder = async (req, res = response) => {
   try {
     const { state, changeTime, dateOrder } = req.body;
     let changedTime =
-      new Date(changeTime).getHours() + ":" + new Date(changeTime).getMinutes();
+      new Date(changeTime).getHours() + ':' + new Date(changeTime).getMinutes();
     let changedDate = +new Date(dateOrder);
     const db_connect = getDb();
-    const orders = db_connect.collection("orders");
+    const orders = db_connect.collection('orders');
     const query = { dateOrder: changedDate };
     const updateDoc = { $set: { changeTime: changedTime, changeState: state } };
     await orders.updateOne(query, updateDoc);
     return res.json({
       ok: true,
-      message: "La orden ha sido actualizada",
+      message: 'La orden ha sido actualizada',
     });
-  } catch {}
+  } catch (error) {
+    res.status(500).send(`error devuelto ${error}`);
+  }
 };
 
 const getOrder = async (req, res = response) => {
   try {
     const id = req.params.id;
     const db_connect = getDb();
-    const order = db_connect.collection("orders");
+    const order = db_connect.collection('orders');
     const query = { _id: ObjectId(id) };
     const result = await order.findOne(query);
     const stateChange = result.changeState;
@@ -144,7 +145,7 @@ const getOrder = async (req, res = response) => {
     if (!result) {
       return res.status(400).json({
         ok: false,
-        msg: "No se encontró el registro",
+        msg: 'No se encontró el registro',
       });
     }
 
@@ -160,6 +161,94 @@ const getOrder = async (req, res = response) => {
   }
 };
 
+const orderAll = async (req, res = response) => {
+  try {
+    const db_connect = getDb();
+    const { shopId } = req.body;
+    const query = { commerce: shopId };
+    const orders = db_connect.collection('orders');
+    const cursor = await orders.find(query);
+    let ordersById = [];
+
+    await cursor.forEach((doc) => {
+      ordersById.push(doc);
+    });
+
+    return res.json({
+      ok: true,
+      ordersById,
+    });
+  } catch (error) {
+    res.status(500).send(`error devuelto ${error}`);
+  }
+};
+
+const orderSum = async (req, res = response) => {
+  try {
+    const db_connect = getDb();
+    const { shopId } = req.body;
+
+    const orders = db_connect.collection('orders');
+
+    const pipeline = [
+      {
+        $match: {
+          commerce: shopId,
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          Total: { $sum: '$orderValue' },
+        },
+      },
+    ];
+
+    const aggCursor = await orders.aggregate(pipeline);
+    // for await (const doc of aggCursor) {
+    //   console.log("doc", doc);
+    // }
+
+    let totalOrders = [];
+    await aggCursor.forEach((doc) => totalOrders.push(doc));
+    return res.json({
+      ok: true,
+      totalOrders,
+    });
+  } catch (error) {
+    res.status(500).send(`error devuelto ${error}`);
+  }
+};
+
+const correctOrder = async (req, res = response) => {
+  try {
+    const db_connect = getDb();
+
+    const { id } = req.params;
+    console.log(id);
+    const { newAmount, correction, oldAmount } = req.body;
+    console.log('new', newAmount, correction, 'old', oldAmount);
+    const orders = db_connect.collection('orders');
+
+    await orders.updateOne(
+      { _id: ObjectId(id) },
+      {
+        $set: {
+          orderValue: newAmount,
+          oldValue: oldAmount,
+          correction: correction,
+        },
+        
+      }
+    );
+    return res.json({
+      ok: true,
+    });
+  } catch (error) {
+    res.status(500).send(`error devuelto ${error}`);
+  }
+};
+
 module.exports = {
   registerOrder,
   getOrders,
@@ -168,4 +257,8 @@ module.exports = {
   getOrder,
   registerRatesServices,
   registerRatesApp,
+  orderAll,
+  orderSum,
+  updateOrder,
+  correctOrder,
 };

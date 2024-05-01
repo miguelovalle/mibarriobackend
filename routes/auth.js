@@ -5,7 +5,6 @@ const { validarCampos } = require("../middlewares/validar-campos");
 // endpoint '/api/auth
 
 const {
-  validateUser,
   createUser,
   loginUser,
   validateToken,
@@ -19,6 +18,7 @@ router.post(
   "/new",
   [
     check("name", "El nombre es obligatorio").not().isEmpty(),
+    check("nit", "El nombre nit es obligatorio").not().isEmpty(),
     check("address", "La dirección es obligatoria").not().isEmpty(),
     check("phone", "El numero de telefono es obligatorio").not().isEmpty(),
     check("email", "El email es obligatorio").isEmail(),
@@ -31,8 +31,6 @@ router.post(
 );
 
 router.post("/", loginUser);
-
-router.post("/validate", validateUser);
 
 router.get("/renew", validateToken);
 

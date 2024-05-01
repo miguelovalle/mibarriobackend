@@ -5,27 +5,6 @@ const { body } = require("express-validator");
 const { getDb } = require("../database/conn");
 const { ObjectId } = require("mongodb");
 
-const validateUser = async (req, res) => {
-  const { email, password } = req.body;
-  try {
-    const db_connect = getDb();
-    const query = { email: email };
-    const user = db_connect.collection("users");
-    const result = await user.findOne(query);
-    if (result) {
-      return res.status(400).json({
-        ok: false,
-        msg: "Un usuario existe con este correo",
-      });
-    }
-  } catch (err) {
-    res.status(500).json({
-      ok: false,
-      msg: `Favor comunicarse con el administrador ${err}`,
-    });
-  }
-};
-
 const createUser = async (req, res = response) => {
   try {
     const db_connect = getDb();
@@ -153,7 +132,6 @@ module.exports = {
   createUser,
   loginUser,
   validateToken,
-  validateUser,
   userDetail,
   addAddress,
 };

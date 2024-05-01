@@ -1,8 +1,8 @@
-const { response } = require("express");
-const bcrypt = require("bcryptjs");
-const { generarJWT } = require("../helpers/jwt");
-const { getDb } = require("../database/conn");
-const ObjectId = require("mongodb").ObjectId;
+const { response } = require('express');
+const bcrypt = require('bcryptjs');
+const { generarJWT } = require('../helpers/jwt');
+const { getDb } = require('../database/conn');
+const ObjectId = require('mongodb').ObjectId;
 
 const commerceList = async (req, res) => {
   try {
@@ -11,8 +11,9 @@ const commerceList = async (req, res) => {
     const long = Number(req.body.coords.lng);
     const lat = Number(req.body.coords.lat);
     const reach = req.body.reach;
+    console.log(tipo);
     const db_connect = getDb();
-    const commerce = db_connect.collection("commerces");
+    const commerce = db_connect.collection('commerces');
 
     if (reach === true) {
       cursor = await commerce.find({ tipo: tipo });
@@ -20,16 +21,15 @@ const commerceList = async (req, res) => {
       cursor = await commerce.aggregate([
         {
           $geoNear: {
-            near: { type: "point", coordinates: [long, lat] },
-            distanceField: "distance",
-            $maxDistance: 2000,
-            query: { tipo: tipo },
+            near: { type: 'point', coordinates: [long, lat] },
             spherical: true,
+            query: { tipo: tipo },
+            distanceField: 'distancia',
+            maxDistance: 2000,
           },
         },
       ]);
     }
-
     let commerces = [];
     await cursor.forEach((doc) => commerces.push(doc));
     return res.json({
@@ -44,7 +44,7 @@ const commerceList = async (req, res) => {
 const getCategories = async (req, res = response) => {
   try {
     const db_connect = getDb();
-    const categories = db_connect.collection("types");
+    const categories = db_connect.collection('types');
     const cursor = await categories.find({});
     let types = [];
     await cursor.forEach((doc) => types.push(doc));
@@ -57,7 +57,7 @@ const getCategories = async (req, res = response) => {
   }
 };
 
-const getCommerceList = async (req, res) => {
+/* const getCommerceList = async (req, res) => {
   try {
     const long = Number(req.query.lg);
     const lat = Number(req.query.lt);
@@ -84,20 +84,20 @@ const getCommerceList = async (req, res) => {
   } catch (err) {
     console.log(`Error de conexion. Intente más tarde ${err}`);
   }
-};
+}; */
 
 const loginCommerce = async (req, res) => {
   const { email, password } = req.body;
   try {
     const db_connect = getDb();
     const query = { email: email };
-    const commerce = db_connect.collection("commerces");
+    const commerce = db_connect.collection('commerces');
     const result = await commerce.findOne(query);
 
     if (!result) {
       return res.status(400).json({
         ok: false,
-        msg: "No existe un contacto con ese email",
+        msg: 'No existe un contacto con ese email',
       });
     }
     const validPassword = bcrypt.compareSync(password, result.passwd);
@@ -105,7 +105,7 @@ const loginCommerce = async (req, res) => {
     if (!validPassword) {
       return res.status(400).json({
         ok: false,
-        msg: "contraseña incorrecta",
+        msg: 'contraseña incorrecta',
       });
     }
 
@@ -134,7 +134,7 @@ const createCommerce = async (req, res) => {
 
     const salt = bcrypt.genSaltSync();
     commerce.passwd = bcrypt.hashSync(commerce.passwd, salt);
-    await db_connect.collection("commerces").insertOne(commerce);
+    await db_connect.collection('commerces').insertOne(commerce);
 
     const token = await generarJWT(commerce.type, commerce.name);
 
@@ -153,15 +153,16 @@ const createCommerce = async (req, res) => {
 const getCommerce = async (req, res) => {
   try {
     const uid = req.params.id;
+    console.log('id', id);
     const db_connect = getDb();
-    const query = { _id: ObjectId(uid) };
-    const commerce = db_connect.collection("commerces");
+    const query = { _id: ObjectId(id) };
+    const commerce = db_connect.collection('commerces');
     const result = await commerce.findOne(query);
-
+    console.log(result);
     if (!result) {
       return res.status(400).json({
         ok: false,
-        msg: "No se encontró el registro",
+        msg: 'No se encontró el registro',
       });
     }
     if (result) {
@@ -183,15 +184,15 @@ const uploadFile = async (req, resp = response) => {
     if (!req.files) {
       resp.send({
         ok: false,
-        message: "No hay archivo para cargar",
+        message: 'No hay archivo para cargar',
       });
     } else {
       const { file } = req.files;
-      file.mv("./public/imgs/" + file.name);
+      file.mv('./public/imgs/' + file.name);
 
       resp.send({
         ok: true,
-        message: "archivo cargado",
+        message: 'archivo cargado',
       });
     }
   } catch (error) {
@@ -207,7 +208,7 @@ const updateShop = async (req, res) => {
   try {
     const db_connect = getDb();
     const query = { _id: ObjectId(shopid) };
-    const commerce = db_connect.collection("commerces");
+    const commerce = db_connect.collection('commerces');
     const result = await commerce.replaceOne(query, shop);
 
     res.json({
@@ -217,7 +218,39 @@ const updateShop = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       ok: false,
-      msg: "hable con el addor",
+      msg: 'hable con el addor',
+    });
+  }
+};
+
+const getListAll = async (req, res) => {
+  try {
+    const db_connect = getDb();
+    const commerces = db_connect.collection('commerces');
+    const data = await commerces.find({}).toArray();
+    let result = [];
+
+    await data.forEach((doc) => {
+      result.push({
+        id: doc._id,
+        name: doc.name,
+        tipo: doc.tipo,
+        contact: doc.contact,
+        phone: doc.phone,
+        email: doc.email,
+        nit: doc.nit,
+        rules: doc.rules,
+      });
+    });
+
+    res.status(201).json({
+      ok: true,
+      result: result,
+    });
+  } catch (error) {
+    res.status(500).json({
+      ok: false,
+      msg: `Error emitido por el servidor ${error}`,
     });
   }
 };
@@ -233,6 +266,26 @@ const validateToken = async (req, res = response) => {
   });
 };
 
+const searchText = async (req, res = response) => {
+  try {
+    const { q } = req.body;
+    const db_connect = getDb();
+    const commerce = db_connect.collection('commerces');
+    const cursor = await commerce.find({
+      $text: { $search: q },
+    });
+
+    let commerces = [];
+    await cursor.forEach((doc) => commerces.push(doc));
+    return res.json({
+      ok: true,
+      commerces,
+    });
+  } catch (error) {
+    res.status(500).send(`error devuelto ${error}`);
+  }
+};
+
 module.exports = {
   validateToken,
   loginCommerce,
@@ -240,7 +293,8 @@ module.exports = {
   getCommerce,
   uploadFile,
   commerceList,
-  getCommerceList,
   updateShop,
   getCategories,
+  getListAll,
+  searchText,
 };

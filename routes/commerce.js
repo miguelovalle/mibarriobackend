@@ -1,30 +1,35 @@
-const { Router } = require("express");
-const { check } = require("express-validator");
-const { validarJWT } = require("../middlewares/validar-jwt");
-const { validarCampos } = require("../middlewares/validar-campos");
+const { Router } = require('express');
+const { check } = require('express-validator');
+const { validarJWT } = require('../middlewares/validar-jwt');
+const { validarCampos } = require('../middlewares/validar-campos');
 const {
   loginCommerce,
   validateToken,
   getCommerce,
   createCommerce,
   uploadFile,
-  getCommerceList,
   commerceList,
   updateShop,
   getCategories,
-} = require("../controllers/commerce");
+  getListAll,
+  searchText,
+} = require('../controllers/commerce');
 
 // endpoint '/api/Commerce'
 
 const router = Router();
 
-router.post("/new", createCommerce);
+router.post('/list', commerceList);
+
+router.get('/cat/types', getCategories);
+
+//router.get("/list", getCommerceList);
 
 router.post(
-  "/login",
+  '/login',
   [
-    check("email", "El email es obligatorio").isEmail(),
-    check("password", "El password con minimo 6 caracteres").isLength({
+    check('email', 'El email es obligatorio').isEmail(),
+    check('password', 'El password con minimo 6 caracteres').isLength({
       min: 6,
     }),
     validarCampos,
@@ -32,18 +37,18 @@ router.post(
   loginCommerce
 );
 
-router.post("/", uploadFile);
+router.post('/new', createCommerce);
 
-router.put("/:id", updateShop);
+router.post('/', uploadFile);
 
-router.post("/list", commerceList);
+router.put('/:id', updateShop);
+getListAll;
+router.get('/listall', getListAll);
 
-router.get("/list", getCommerceList);
+router.get('/:id', getCommerce);
 
-router.get("/:id", getCommerce);
+router.post('/search', searchText);
 
-router.get("/cat/types", getCategories);
-
-router.get("/renew", validarJWT, validateToken);
+router.get('/renew', validarJWT, validateToken);
 
 module.exports = router;

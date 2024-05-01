@@ -1,5 +1,5 @@
-const { Router } = require("express");
-const { validarJWT } = require("../middlewares/validar-jwt");
+const { Router } = require('express');
+const { validarJWT } = require('../middlewares/validar-jwt');
 
 const {
   registerOrder,
@@ -9,24 +9,31 @@ const {
   getOrder,
   registerRatesServices,
   registerRatesApp,
-} = require("../controllers/order");
+  orderAll,
+  orderSum,
+  correctOrder,
+} = require('../controllers/order');
 
 const router = Router();
 
-router.post("/", registerOrder);
+router.post('/', registerOrder);
 
-router.post("/rateservice", registerRatesServices);
+router.post('/rateservice', registerRatesServices);
 
-router.post("/rateapp", registerRatesApp);
+router.post('/rateapp', registerRatesApp);
 //router.use(validarJWT);
-router.get("/:id", getOrder);
+router.get('/:id', getOrder);
 
-router.post("/orderlist", getOrders);
+router.post('/orderlist', getOrders);
 
-router.post("/totalgrouped", getOrdersGrouped);
+router.post('/totalgrouped', getOrdersGrouped);
 
-router.put("/update", updateOrder);
+router.put('/update', updateOrder);
 
-// router.get("/:id", getOrder);
+router.post('/orderall', orderAll);
+
+router.post('/ordersum', orderSum);
+
+router.put('/:id', correctOrder);
 
 module.exports = router;
